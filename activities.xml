@@ -1,0 +1,30 @@
+<daily>
+	<activitygroup caption="Sleep" color="333333">
+		<activity id="0" caption="Sleep" color="333333" />
+	</activitygroup>
+	<activitygroup caption="Work" color="ff0000">
+		<activity id="3" caption="Work: coding" color="ff0000" />
+		<activity id="4" caption="Work: meeting" color="bb0000" />
+	</activitygroup>
+	<activitygroup caption="Chores" color="aaaaaa">
+		<activity id="10" caption="Cleaning and laundry" color="ff9966" />
+		<activity id="31" caption="Shopping" color="77cc33" />
+		<activity id="9" caption="Cooking and eating" color="ffcc00" />
+		<activity id="14" caption="Travelling" color="ccffcc" />
+	</activitygroup>
+	<activitygroup caption="Hobbies" color="00ffff">
+		<activity id="6" caption="Crafting" color="00ccff" />
+		<activity id="7" caption="Music" color="00ffff" />
+	</activitygroup>
+	<activitygroup caption="Rest" color="00ff00">
+		<activity id="18" caption="Going for a walk" color="00ff00" />
+		<activity id="28" caption="Socialising" color="ee99ff" />
+		<activity id="15" caption="Browsing web" color="ff66cc" />
+		<activity id="29" caption="Watching movies" color="ff99ff" />
+		<activity id="16" caption="Playing games" color="ffff33" />
+		<activity id="22" caption="Other" color="ccff33" />
+	</activitygroup>
+	<activitygroup caption="Idle" color="ffffff">
+		<activity id="23" caption="Idle" color="ffffff" />
+	</activitygroup>
+</daily>
