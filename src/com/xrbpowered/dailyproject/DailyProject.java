@@ -49,7 +49,7 @@ public class DailyProject extends JFrame {
 		
 
 		final DailyTable table = new DailyTable(this, ActivityList.getInstance());
-		rpane = new RichInfoPane(ActivityList.getInstance());
+		rpane = new RichInfoPane();
 
 		JPanel cp = new JPanel() {
 			@Override

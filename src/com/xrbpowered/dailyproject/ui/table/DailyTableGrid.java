@@ -23,6 +23,7 @@ import com.xrbpowered.dailyproject.data.activities.ActivityList;
 import com.xrbpowered.dailyproject.data.activities.Statistics;
 import com.xrbpowered.dailyproject.data.log.DayData;
 import com.xrbpowered.dailyproject.data.log.Note;
+import com.xrbpowered.dailyproject.data.log.NoteData;
 import com.xrbpowered.dailyproject.data.log.TableData;
 import com.xrbpowered.dailyproject.ui.RenderUtils;
 import com.xrbpowered.dailyproject.ui.dialogs.EditNoteDialog;
@@ -415,9 +416,7 @@ public class DailyTableGrid extends JPanel implements MouseListener, MouseMotion
 		int w = g2.getFontMetrics(RenderUtils.FONT11).stringWidth(text) + 20;
 		int h = 36;
 		
-		String timeStamp = RenderUtils.formatTimeStamp(note.day.getDate(),
-				note.day.getMonthData().getMonth(), note.col/HOUR_COLS,
-				note.col%HOUR_COLS * (60/HOUR_COLS));
+		String timeStamp = note.formatTimeStamp();
 		
 		w = Math.max(w, g2.getFontMetrics(RenderUtils.FONT10).stringWidth(timeStamp) + 20);
 		g2.setPaint(new GradientPaint(0, y-h-5, new Color(248, 248, 248),
@@ -472,6 +471,8 @@ public class DailyTableGrid extends JPanel implements MouseListener, MouseMotion
 		Calendar calendar = (Calendar) startDate.clone();
 		int nRows = getMaxGridRows();
 		int curRow = -1;
+		NoteData notes = TableData.getNotes();
+		Note nextNote = notes.findNoteAfter(new Note(calendar, -1));
 		for(int row = 0; row <= nRows; row++) {
 			int rowy = getRowY(row);
 			if(beforeEnd(calendar)) {
@@ -485,6 +486,7 @@ public class DailyTableGrid extends JPanel implements MouseListener, MouseMotion
 				
 				int nCols = getModeGridCols()*HOUR_COLS - startCol;
 				int curCol = startCol;
+				boolean hasNotes = nextNote!=null && nextNote.dayEquals(calendar);
 				for(int col = 0; col < nCols; col++, curCol++) {
 					int colx = getColX(col);
 					if(row == 0) {
@@ -493,11 +495,11 @@ public class DailyTableGrid extends JPanel implements MouseListener, MouseMotion
 	
 					paintActivityRow(g2, data, stats, curCol, colx, rowy);
 	
-					if(data!=null && (parent.getMode() == DailyTable.MODE_OBSERVE
-							|| parent.getMode() == DailyTable.MODE_EDIT_NOTES)) {
-						Note note = data.getNoteAt(curCol);
-						if(note != null) {
+					if(parent.getMode()==DailyTable.MODE_OBSERVE || parent.getMode()==DailyTable.MODE_EDIT_NOTES) {
+						if(hasNotes && nextNote.getCol()==col) {
 							paintNoteMark(g2, Color.RED, colx, rowy);
+							nextNote = notes.findNoteAfter(nextNote);
+							hasNotes = nextNote!=null && nextNote.dayEquals(calendar);
 						}
 					}
 					
@@ -515,8 +517,7 @@ public class DailyTableGrid extends JPanel implements MouseListener, MouseMotion
 			paintRowBottomLine(g2, calendar, gridw, rowy);
 			
 			// find current row
-			if(calendar.get(Calendar.DAY_OF_MONTH) == Calendar.getInstance().get(
-					Calendar.DAY_OF_MONTH)
+			if(calendar.get(Calendar.DAY_OF_MONTH) == Calendar.getInstance().get(Calendar.DAY_OF_MONTH)
 					&& calendar.get(Calendar.MONTH) == Calendar.getInstance().get(Calendar.MONTH)
 					&& calendar.get(Calendar.YEAR) == Calendar.getInstance().get(Calendar.YEAR)) {
 				curRow = row;
@@ -580,24 +581,18 @@ public class DailyTableGrid extends JPanel implements MouseListener, MouseMotion
 			if(parent.getMode() == DailyTable.MODE_EDIT_NOTES) {
 				Point loc = pointToCell(e.getPoint());
 				if(isOnScreen(loc)) {
-					DayData data = getDayAtRow(loc.y, true);
-					if(data == null)
-						return;
-					Note note = data.getNoteAt(loc.x);
-					boolean newNote = false;
-					if(note == null) {
-						note = new Note(data, loc.x);
-						newNote = true;
-					}
-					note = EditNoteDialog.show(e.getLocationOnScreen(), note, !newNote);
-					if(newNote && note != null) {
-						data.addNote(loc.x, note);
-					} else if(!newNote && note == null) {
-						data.removeNoteAt(loc.x);
-					} else if(!newNote) {
-						data.updateNoteAt(loc.x, note);
-					}
-					repaint();
+					NoteData notes = TableData.getNotes();
+					Calendar c = getRowCalendar(loc.y);
+					Note oldNote = notes.getNoteAt(c, loc.x);
+					Note note = EditNoteDialog.show(e.getLocationOnScreen(),
+							oldNote==null ? new Note(c, loc.x) : oldNote, oldNote!=null);
+					if(oldNote==null && note!=null)
+						notes.add(note);
+					else if(oldNote!=null && note==null)
+						notes.remove(oldNote);
+					else if(oldNote!=null)
+						notes.update(note);
+					getRootPane().repaint();
 				}
 			} else if(parent.getMode() == DailyTable.MODE_EDIT_ACTIVITIES) {
 				if(selectionStart != null) {
@@ -631,10 +626,14 @@ public class DailyTableGrid extends JPanel implements MouseListener, MouseMotion
 		showingNote = null;
 	}
 
-	private DayData getDayAtRow(int row, boolean create) {
+	private Calendar getRowCalendar(int row) {
 		Calendar c = (Calendar) startDate.clone();
 		c.add(Calendar.DAY_OF_MONTH, row);
-		return TableData.getInstance().getDayData(c, create);
+		return c;
+	}
+
+	private DayData getDayAtRow(int row, boolean create) {
+		return TableData.getInstance().getDayData(getRowCalendar(row), create);
 	}
 
 	private Point pointToCell(Point point) {
@@ -689,16 +688,17 @@ public class DailyTableGrid extends JPanel implements MouseListener, MouseMotion
 			if(parent.getMode() == DailyTable.MODE_EDIT_NOTES) {
 				Point loc = pointToCell(e.getPoint());
 				if(isOnScreen(loc)) {
-					DayData data = getDayAtRow(loc.y, true);
-					if(data == null)
-						return;
-					dragNote = data.getNoteAt(loc.x);
-					data.removeNoteAt(loc.x);
+					NoteData notes = TableData.getNotes();
+					dragNote = notes.getNoteAt(startDate, loc.y, loc.x);
+					if(dragNote!=null)
+						notes.remove(dragNote);
+					
 					dragNotePosition = loc;
 					showingNote = null;
 					repaint();
 				}
-			} else if(parent.getMode() == DailyTable.MODE_EDIT_ACTIVITIES
+			}
+			else if(parent.getMode() == DailyTable.MODE_EDIT_ACTIVITIES
 					|| parent.getMode() == DailyTable.MODE_STATS && parent.statsSummary) {
 				Point loc = pointToCell(e.getPoint());
 				if(isOnScreen(loc)) {
@@ -707,8 +707,8 @@ public class DailyTableGrid extends JPanel implements MouseListener, MouseMotion
 					selectionSize = new Point(0, 0);
 					repaint();
 				}
-			} else if(parent.getMode() == DailyTable.MODE_STATS
-					&& !parent.statsSummary) {
+			}
+			else if(parent.getMode() == DailyTable.MODE_STATS && !parent.statsSummary) {
 				Point loc = pointToCell(e.getPoint());
 				DayData data = getDayAtRow(loc.y, true);
 				if(data == null)
@@ -740,29 +740,34 @@ public class DailyTableGrid extends JPanel implements MouseListener, MouseMotion
 			}
 			selecting = false;
 			if(dragNote != null) {
-				DayData data = getDayAtRow(dragNotePosition.y, true);
-				if(data == null || data.getNoteAt(dragNotePosition.x) != null) {
+				NoteData notes = TableData.getNotes();
+				Calendar c = getRowCalendar(dragNotePosition.y);
+				dragNote.setDayCol(c, dragNotePosition.x);
+				Note oldNote = notes.getNoteAt(c, dragNotePosition.x);
+				if(oldNote!=null) {
 					switch(OptionPane.showMessageDialog(
 							"The note has been dragged over another. "
 									+ "Do you want to replace the existing node in this cell or to merge these two notes?",
 							"Merge notes", OptionPane.QUESTION_ICON, new String[] {"Merge",
 									"Replace", "Cancel"})) {
 						case 0:
-							Note n = data.getNoteAt(dragNotePosition.x);
-							n.text += " " + dragNote.text;
+							oldNote.text += " " + dragNote.text;
+							notes.update(oldNote);
 							break;
 						case 1:
-							data.removeNoteAt(dragNotePosition.x);
-							data.addNote(dragNotePosition.x, dragNote);
+							notes.remove(oldNote);
+							notes.add(dragNote);
 							break;
 						default:
-							dragNote.day.addNote(dragNote.col, dragNote);
+							notes.add(dragNote);
 							break;
 					}
-				} else
-					data.addNote(dragNotePosition.x, dragNote);
+				}
+				else {
+					notes.add(dragNote);
+				}
 				dragNote = null;
-				repaint();
+				getRootPane().repaint();
 			}
 		}
 	}
@@ -778,20 +783,19 @@ public class DailyTableGrid extends JPanel implements MouseListener, MouseMotion
 			Point loc = snapToScreen(pointToCell(e.getPoint()));
 			selectionSize.setLocation(loc.x - selectionStart.x, loc.y - selectionStart.y);
 			repaint();
-		} else if(dragNote != null) {
+		}
+		else if(dragNote != null) {
 			dragNotePosition = snapToScreen(pointToCell(e.getPoint()));
 			repaint();
-		} else if(parent.getMode()==DailyTable.MODE_OBSERVE
+		}
+		else if(parent.getMode()==DailyTable.MODE_OBSERVE
 				|| parent.getMode()==DailyTable.MODE_EDIT_NOTES) {
 			Note prevNote = showingNote;
 			Point loc = pointToCell(e.getPoint());
 			if(isOnScreen(loc)) {
-				DayData data = getDayAtRow(loc.y, false);
-				if(data != null) {
-					showingNote = data.getNoteAt(loc.x);
+				showingNote = TableData.getNotes().getNoteAt(startDate, loc.y, loc.x);
+				if(showingNote!=null)
 					showingNotePoint = loc;
-				} else
-					showingNote = null;
 			} else
 				showingNote = null;
 			if(showingNote != prevNote) {

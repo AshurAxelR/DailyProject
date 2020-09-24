@@ -1,9 +1,6 @@
 package com.xrbpowered.dailyproject.data.activities;
 
 import java.io.IOException;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.Calendar;
 import java.util.HashMap;
 import java.util.LinkedList;
 
@@ -17,7 +14,7 @@ import com.xrbpowered.dailyproject.data.log.TableData;
 
 
 public class ActivityList {
-	private static final String DEFAULT_ACTIVITY_CONFIG_PATH = "activities.xml";
+	private static final String ACTIVITY_CONFIG_PATH = "activities.xml";
 	
 	public ActivityGroup[] activityGroups = null;
 	public Activity[] activities = null;
@@ -34,7 +31,7 @@ public class ActivityList {
 	}
 	
 	public ActivityList() throws IOException, InvalidFormatException {
-		this(DEFAULT_ACTIVITY_CONFIG_PATH);
+		this(ACTIVITY_CONFIG_PATH);
 	}
 	
 	public ActivityList(String path) throws IOException, InvalidFormatException  {
@@ -44,14 +41,7 @@ public class ActivityList {
 		}
 		TableData.theEnd = null;
 		if(root.hasAttribute("theend")) {
-			SimpleDateFormat fmt = new SimpleDateFormat("yyyy-MM-dd");
-			try {
-				Calendar calendar = Calendar.getInstance();
-				calendar.setTime(fmt.parse(root.getAttribute("theend")));
-				TableData.theEnd = calendar;
-			} catch(ParseException e) {
-				throw new InvalidFormatException();
-			}
+			TableData.theEnd = TableData.parseDate(root.getAttribute("theend"));
 		}
 		LinkedList<ActivityGroup> groupList = new LinkedList<ActivityGroup>();
 		LinkedList<Activity> activityList = new LinkedList<Activity>();
