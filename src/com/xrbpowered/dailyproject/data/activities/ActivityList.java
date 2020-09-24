@@ -1,6 +1,9 @@
 package com.xrbpowered.dailyproject.data.activities;
 
 import java.io.IOException;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.HashMap;
 import java.util.LinkedList;
 
@@ -9,6 +12,7 @@ import org.w3c.dom.NodeList;
 
 import com.xrbpowered.dailyproject.data.InvalidFormatException;
 import com.xrbpowered.dailyproject.data.XmlUtils;
+import com.xrbpowered.dailyproject.data.log.TableData;
 
 
 
@@ -37,6 +41,17 @@ public class ActivityList {
 		Element root = XmlUtils.loadXml(path);
 		if(!root.getNodeName().equals("daily")) {
 			throw new InvalidFormatException();
+		}
+		TableData.theEnd = null;
+		if(root.hasAttribute("theend")) {
+			SimpleDateFormat fmt = new SimpleDateFormat("yyyy-MM-dd");
+			try {
+				Calendar calendar = Calendar.getInstance();
+				calendar.setTime(fmt.parse(root.getAttribute("theend")));
+				TableData.theEnd = calendar;
+			} catch(ParseException e) {
+				throw new InvalidFormatException();
+			}
 		}
 		LinkedList<ActivityGroup> groupList = new LinkedList<ActivityGroup>();
 		LinkedList<Activity> activityList = new LinkedList<Activity>();
@@ -68,7 +83,6 @@ public class ActivityList {
 		activityGroups = new ActivityGroup[groupList.size()];
 		for(int i=0; i<groupList.size(); i++) {
 			activityGroups[i] = groupList.get(i);
-			activityGroups[i].index = i;
 		}
 		activities = new Activity[activityList.size()];
 		for(int i=0; i<activityList.size(); i++) {

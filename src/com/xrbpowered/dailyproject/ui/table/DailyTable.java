@@ -31,7 +31,6 @@ public class DailyTable extends JPanel {
 	private Button btnNotes;
 	
 	private int mode;
-	public boolean statsGroup = false;
 	public boolean statsSummary = false;
 	
 	private DailyProject frame;

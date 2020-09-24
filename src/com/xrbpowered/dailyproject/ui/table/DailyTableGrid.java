@@ -12,8 +12,6 @@ import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
 import java.awt.event.MouseWheelEvent;
 import java.awt.event.MouseWheelListener;
-import java.awt.font.TextLayout;
-import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.util.Calendar;
@@ -55,6 +53,17 @@ public class DailyTableGrid extends JPanel implements MouseListener, MouseMotion
 	private static final int CALENDAR_DAYOFWEEK_WIDTH = 16;
 	private static final int TEXT_HEIGHT = 12;
 	private static final int NODE_MARK_RADIUS = 3;
+
+	private static boolean beforeEnd(Calendar calendar) {
+		return TableData.theEnd==null || calendar.compareTo(TableData.theEnd)<0;
+	}
+
+	private static boolean isEnd(Calendar calendar) {
+		return TableData.theEnd!=null
+				&& TableData.theEnd.get(Calendar.YEAR)==calendar.get(Calendar.YEAR)
+				&& TableData.theEnd.get(Calendar.MONTH)==calendar.get(Calendar.MONTH)
+				&& TableData.theEnd.get(Calendar.DATE)==calendar.get(Calendar.DATE);
+	}
 
 	private static BufferedImage bgImage = null;
 	private static BufferedImage fgImage = null;
@@ -119,10 +128,7 @@ public class DailyTableGrid extends JPanel implements MouseListener, MouseMotion
 	
 	public int getModeGridCols() {
 		if(parent.getMode() == DailyTable.MODE_STATS  && parent.statsSummary) {
-			if(parent.statsGroup)
-				return activityList.activityGroups.length;
-			else
-				return activityList.activities.length;
+			return activityList.activities.length;
 		}
 		else
 			return 24;
@@ -175,14 +181,6 @@ public class DailyTableGrid extends JPanel implements MouseListener, MouseMotion
 		g2.fillRect(0, GRID_STARTY, CALENDAR_MONTHBAR_WIDTH, getHeight());
 	}
 	
-	/*private static Calendar end = Calendar.getInstance();
-	static {
-		end.set(year, 11, 25);
-	}
-	private boolean beforeEnd(Calendar calendar) {
-		return calendar.compareTo(end)<0;
-	}*/
-	
 	private void paintCalendarRow(Graphics2D g2, Calendar calendar, int rowy) {
 		boolean isWeekend = calendar.get(Calendar.DAY_OF_WEEK) < 2
 				|| calendar.get(Calendar.DAY_OF_WEEK) > 6;
@@ -212,10 +210,7 @@ public class DailyTableGrid extends JPanel implements MouseListener, MouseMotion
 			if(col%HOUR_COLS == 0) {
 				col /= HOUR_COLS;
 				ActivityImageHolder actImage = null;
-				if(parent.statsGroup && col < activityList.activityGroups.length) {
-					actImage = activityList.activityGroups[col];
-				} else if(!parent.statsGroup
-						&& col < activityList.activities.length) {
+				if(col < activityList.activities.length) {
 					actImage = activityList.activities[col];
 				}
 				if(actImage != null) {
@@ -237,11 +232,7 @@ public class DailyTableGrid extends JPanel implements MouseListener, MouseMotion
 	
 	private int getStatsValue(DayData data, Statistics stats, int col) {
 		if(data != null && !stats.noStats()) {
-			if(parent.statsGroup
-					&& col < activityList.activityGroups.length) {
-				return stats.getStatGroupValue(col);
-			} else if(!parent.statsGroup
-					&& col < activityList.activities.length) {
+			if(col < activityList.activities.length) {
 				return stats.getStatValue(col);
 			}
 		}
@@ -258,9 +249,8 @@ public class DailyTableGrid extends JPanel implements MouseListener, MouseMotion
 						g2.setFont(RenderUtils.FONT11);
 						g2.setColor((value == 0)?RenderUtils.GRAY208:Color.GRAY);
 						String duration = RenderUtils.formatDuration(value);
-						Rectangle2D bounds = new TextLayout(duration, g2.getFont(),
-								g2.getFontRenderContext()).getBounds();
-						g2.drawString(duration, colx+HOUR_COL_WIDTH-5-((int) bounds.getWidth()),
+						g2.drawString(duration,
+								colx+HOUR_COL_WIDTH-5-g2.getFontMetrics().stringWidth(duration),
 								rowy+TEXT_HEIGHT+2);
 						g2.setFont(RenderUtils.FONT10);
 						g2.setColor(RenderUtils.GRAY224);
@@ -271,9 +261,6 @@ public class DailyTableGrid extends JPanel implements MouseListener, MouseMotion
 			} else {
 				if(data == null)
 					drawActivityItem(g2, col, colx, rowy, null, null, null);
-				else if(parent.statsGroup)
-					drawActivityItem(g2, col, colx, rowy, stats.getActivityGroup(col),
-							stats.getActivityGroup(col-1), stats.getActivityGroup(col+1));
 				else
 					drawActivityItem(g2, col, colx, rowy, stats.getActivity(col),
 							stats	.getActivity(col-1), stats.getActivity(col+1));
@@ -299,15 +286,14 @@ public class DailyTableGrid extends JPanel implements MouseListener, MouseMotion
 	}
 	
 	private void paintRowBottomLine(Graphics2D g2, Calendar calendar, int gridw, int rowy) {
-		//SimpleDateFormat fmt = new SimpleDateFormat("yyyyMMdd");
-		/*if(fmt.format(calendar.getTime()).equals(fmt.format(end.getTime()))) {
+		if(isEnd(calendar)) {
 			g2.setColor(Color.RED);
 			g2.drawLine(CALENDAR_MONTHBAR_WIDTH, rowy, gridw-1, rowy);
 			g2.drawLine(CALENDAR_MONTHBAR_WIDTH, rowy+1, gridw-1, rowy+1);
 			return;
 		}
 		if(!beforeEnd(calendar))
-			return;*/
+			return;
 		if(calendar.get(Calendar.DAY_OF_WEEK) == 2 || calendar.get(Calendar.DAY_OF_MONTH) == 1)
 			g2.setColor(Color.BLACK);
 		else if(calendar.get(Calendar.DAY_OF_WEEK) == 1
@@ -349,11 +335,11 @@ public class DailyTableGrid extends JPanel implements MouseListener, MouseMotion
 				g2.setColor(Color.GRAY);
 				g2.drawRect(x, y, w, h);
 				if(parent.getMode()==DailyTable.MODE_STATS && parent.statsSummary && num>0) {
-					String info = String.format("\u03a3: %s  \u0100: %s", RenderUtils.formatDuration(sum),
+					g2.setFont(RenderUtils.FONT11);
+					String info = String.format("%dd  \u03a3: %s  \u0100: %s",
+							num, RenderUtils.formatDuration(sum),
 							RenderUtils.formatDuration(Math.round(sum/(float)num)));
-					Rectangle2D bounds = new TextLayout(info, RenderUtils.FONT11,
-							g2.getFontRenderContext()).getBounds();
-					int tw = (int) bounds.getWidth() + 16;
+					int tw = g2.getFontMetrics().stringWidth(info) + 16;
 					int tx = x+w-tw;
 					if(tx<GRID_STARTX)
 						tx = GRID_STARTX;
@@ -361,7 +347,6 @@ public class DailyTableGrid extends JPanel implements MouseListener, MouseMotion
 					if(ty>getHeight())
 						ty = getHeight();
 					
-					g2.setFont(RenderUtils.FONT11);
 					g2.setPaint(new GradientPaint(0, ty-16, new Color(248, 248, 248), 0,
 							ty, new Color(224, 224, 224)));
 					g2.fillRect(tx, ty-17, tw, 17);
@@ -379,12 +364,10 @@ public class DailyTableGrid extends JPanel implements MouseListener, MouseMotion
 		
 		g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 		g2.setColor(Color.BLACK);
-		int weekh = (curRow>=7 ? 7 : curRow+1)*ROW_HEIGHT;
-		g2.fillRect(CALENDAR_MONTHBAR_WIDTH-2, rowy-weekh+ROW_HEIGHT, 2, weekh);
 		g2.fillPolygon(new int[] { 
-				CALENDAR_MONTHBAR_WIDTH-8,
-				CALENDAR_MONTHBAR_WIDTH-3,
-				CALENDAR_MONTHBAR_WIDTH-8
+				CALENDAR_MONTHBAR_WIDTH-6,
+				CALENDAR_MONTHBAR_WIDTH-1,
+				CALENDAR_MONTHBAR_WIDTH-6
 			}, new int[] {rowy+3, rowy+8, rowy+13}, 3);
 		g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
 				RenderingHints.VALUE_ANTIALIAS_OFF);
@@ -429,19 +412,16 @@ public class DailyTableGrid extends JPanel implements MouseListener, MouseMotion
 		if(text == null || text.isEmpty())
 			text = "...";
 		
-		Rectangle2D bounds = new TextLayout(text, RenderUtils.FONT11,
-				g2.getFontRenderContext()).getBounds();
-		int w = (int) bounds.getWidth() + 20;
+		int w = g2.getFontMetrics(RenderUtils.FONT11).stringWidth(text) + 20;
 		int h = 36;
 		
 		String timeStamp = RenderUtils.formatTimeStamp(note.day.getDate(),
 				note.day.getMonthData().getMonth(), note.col/HOUR_COLS,
 				note.col%HOUR_COLS * (60/HOUR_COLS));
 		
-		bounds = new TextLayout(timeStamp, RenderUtils.FONT10,
-				g2.getFontRenderContext()).getBounds();
-		w = Math.max(w, (int) bounds.getWidth() + 20);
-		g2.setColor(new Color(224, 224, 224));//, 208));
+		w = Math.max(w, g2.getFontMetrics(RenderUtils.FONT10).stringWidth(timeStamp) + 20);
+		g2.setPaint(new GradientPaint(0, y-h-5, new Color(248, 248, 248),
+				0, y-h+13, new Color(224, 224, 224)));
 		g2.fillRect(x-w/2, y-h-5, w, 18);
 		g2.setColor(Color.WHITE);
 		g2.fillRect(x-w/2, y-h-5+18, w, h-18);
@@ -494,7 +474,7 @@ public class DailyTableGrid extends JPanel implements MouseListener, MouseMotion
 		int curRow = -1;
 		for(int row = 0; row <= nRows; row++) {
 			int rowy = getRowY(row);
-			//if(beforeEnd(calendar)) {
+			if(beforeEnd(calendar)) {
 				paintCalendarRow(g2, calendar, rowy);
 	
 				DayData data = TableData.getInstance().getDayData(calendar, false);
@@ -531,7 +511,7 @@ public class DailyTableGrid extends JPanel implements MouseListener, MouseMotion
 					}
 	
 				}
-			//}
+			}
 			paintRowBottomLine(g2, calendar, gridw, rowy);
 			
 			// find current row
@@ -631,7 +611,7 @@ public class DailyTableGrid extends JPanel implements MouseListener, MouseMotion
 					}
 				}
 			} else if(parent.getMode() == DailyTable.MODE_STATS
-					&& !parent.statsSummary && !parent.statsGroup) {
+					&& !parent.statsSummary) {
 				resetActivityOrder();
 				repaint();
 			}
@@ -728,7 +708,7 @@ public class DailyTableGrid extends JPanel implements MouseListener, MouseMotion
 					repaint();
 				}
 			} else if(parent.getMode() == DailyTable.MODE_STATS
-					&& !parent.statsSummary && !parent.statsGroup) {
+					&& !parent.statsSummary) {
 				Point loc = pointToCell(e.getPoint());
 				DayData data = getDayAtRow(loc.y, true);
 				if(data == null)

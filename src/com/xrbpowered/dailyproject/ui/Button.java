@@ -8,8 +8,6 @@ import java.awt.Graphics2D;
 import java.awt.RenderingHints;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
-import java.awt.font.TextLayout;
-import java.awt.geom.Rectangle2D;
 
 import javax.swing.JButton;
 
@@ -41,8 +39,7 @@ public class Button extends JButton implements MouseListener {
 		if(caption!=null) {
 			g2.setFont(RenderUtils.FONT11BOLD);
 			g2.setColor(isEnabled()?Color.BLACK:Color.LIGHT_GRAY);
-			Rectangle2D bounds = new TextLayout(caption, g2.getFont(), g2.getFontRenderContext()).getBounds();
-			g2.drawString(caption, getWidth()-((int) bounds.getWidth())-10, (getHeight()-11)/2+10);
+			g2.drawString(caption, getWidth()-g2.getFontMetrics().stringWidth(caption)-10, (getHeight()-11)/2+10);
 		}
 		
 		if(isSelected()) {

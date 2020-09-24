@@ -5,7 +5,7 @@ import com.xrbpowered.dailyproject.data.log.DayData;
 public class Statistics {
 	private Activity[] log = new Activity[24*4];
 	private int[] statistics;
-	private int[] groupStatistics;
+	//private int[] groupStatistics;
 	private boolean noStats;
 
 	private ActivityList activityList;
@@ -13,7 +13,6 @@ public class Statistics {
 	public Statistics(ActivityList activityList) {
 		this.activityList = activityList;
 		statistics = new int[activityList.activities.length];
-		groupStatistics = new int[activityList.activityGroups.length];
 	}
 	
 	public void setDayData(DayData data, int[] activityOrder) {
@@ -21,15 +20,11 @@ public class Statistics {
 		for(int i=0; i<activityList.activities.length; i++) {
 			statistics[i] = 0;
 		}
-		for(int i=0; i<activityList.activityGroups.length; i++) {
-			groupStatistics[i] = 0;
-		}
 		for(int col=0; col<24*4; col++) {
 			Activity activity = data.getActivity(col);
 			if(!activity.isNull() && activity.index>=0) {
 				noStats = false;
 				statistics[activity.index]++;
-				groupStatistics[activity.group.index]++;
 			}
 		}
 		if(activityOrder!=null) {
@@ -65,10 +60,6 @@ public class Statistics {
 		return statistics[activityIndex];
 	}
 
-	public int getStatGroupValue(int groupIndex) {
-		return groupStatistics[groupIndex];
-	}
-	
 	public boolean noStats() {
 		return noStats;
 	}
