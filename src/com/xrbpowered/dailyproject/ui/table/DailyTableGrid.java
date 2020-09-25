@@ -496,7 +496,7 @@ public class DailyTableGrid extends JPanel implements MouseListener, MouseMotion
 					paintActivityRow(g2, data, stats, curCol, colx, rowy);
 	
 					if(parent.getMode()==DailyTable.MODE_OBSERVE || parent.getMode()==DailyTable.MODE_EDIT_NOTES) {
-						if(hasNotes && nextNote.getCol()==col) {
+						if(hasNotes && nextNote.getCol()==curCol) {
 							paintNoteMark(g2, Color.RED, colx, rowy);
 							nextNote = notes.findNoteAfter(nextNote);
 							hasNotes = nextNote!=null && nextNote.dayEquals(calendar);
@@ -818,13 +818,18 @@ public class DailyTableGrid extends JPanel implements MouseListener, MouseMotion
 		moveStartDate(e.getUnitsToScroll());
 	}
 	
+	public void resetStartCol() {
+		startCol = 0;
+		repaint();
+	}
+	
 	public void moveStartCol(int delta) {
 		startCol += delta;
 		if(startCol<0) {
 			startCol = 0;
 		}
 		else if(startCol>=getMaxGridCols()*HOUR_COLS) {
-			startCol = getMaxGridCols()*HOUR_COLS-1;
+			startCol = getMaxGridCols()*HOUR_COLS-HOUR_COLS;
 		}
 		showingNote = null;
 		repaint();

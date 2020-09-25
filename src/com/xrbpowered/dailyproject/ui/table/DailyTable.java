@@ -97,9 +97,7 @@ public class DailyTable extends JPanel {
 		btnSummary.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
-				statsSummary = !statsSummary;
-				btnSummary.setSelected(statsSummary);
-				repaint();
+				toggleSummary();
 			}
 		});
 		toolPane.add(btnSummary, c);
@@ -154,6 +152,12 @@ public class DailyTable extends JPanel {
 		btnSummary.setEnabled(mode==MODE_STATS);
 		table.deselect();
 		frame.repaint();
+	}
+	
+	public void toggleSummary() {
+		statsSummary = !statsSummary;
+		btnSummary.setSelected(statsSummary);
+		repaint();
 	}
 	
 	public int getMaxTableWidth() {
