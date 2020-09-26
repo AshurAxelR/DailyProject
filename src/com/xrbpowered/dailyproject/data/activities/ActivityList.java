@@ -1,7 +1,6 @@
 package com.xrbpowered.dailyproject.data.activities;
 
 import java.io.IOException;
-import java.util.HashMap;
 import java.util.LinkedList;
 
 import org.w3c.dom.Element;
@@ -19,7 +18,7 @@ public class ActivityList {
 	public ActivityGroup[] activityGroups = null;
 	public Activity[] activities = null;
 	
-	public HashMap<String, Activity> activitiesById = new HashMap<String, Activity>();
+	public Activity[] activitiesById = new Activity[Activity.MAX_ID+1];
 	
 	private static ActivityList inst = null;
 	private Statistics statistics = null;
@@ -39,10 +38,20 @@ public class ActivityList {
 		if(!root.getNodeName().equals("daily")) {
 			throw new InvalidFormatException();
 		}
+		
 		TableData.theEnd = null;
 		if(root.hasAttribute("theend")) {
 			TableData.theEnd = TableData.parseDate(root.getAttribute("theend"));
 		}
+		TableData.saveFormat = TableData.DEFAULT_FORMAT;
+		if(root.hasAttribute("saveFormat")) {
+			String sf = root.getAttribute("saveFormat");
+			if(sf.equalsIgnoreCase("xml"))
+				TableData.saveFormat = TableData.FORMAT_XML;
+			else if(sf.equalsIgnoreCase("dat") || sf.equalsIgnoreCase("data"))
+				TableData.saveFormat = TableData.FORMAT_DATA;
+		}
+		
 		LinkedList<ActivityGroup> groupList = new LinkedList<ActivityGroup>();
 		LinkedList<Activity> activityList = new LinkedList<Activity>();
 		
@@ -63,7 +72,7 @@ public class ActivityList {
 				Element activityNode = (Element) activities.item(j);
 				Activity activity = new Activity(activityNode);
 				activity.group = grp;
-				activitiesById.put(activity.id, activity);
+				activitiesById[activity.getId()] = activity;
 				if(activity.isInactive())
 					continue;
 				activityList.add(activity);

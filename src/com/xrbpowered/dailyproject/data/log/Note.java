@@ -7,7 +7,6 @@ import org.w3c.dom.Element;
 
 import com.xrbpowered.dailyproject.data.InvalidFormatException;
 import com.xrbpowered.dailyproject.ui.RenderUtils;
-import com.xrbpowered.dailyproject.ui.table.DailyTableGrid;
 
 public class Note implements Comparable<Note> {
 	private int year;
@@ -93,14 +92,14 @@ public class Note implements Comparable<Note> {
 	
 	public String formatTimeStamp() {
 		return RenderUtils.formatTimeStamp(day, month,
-				col/DailyTableGrid.HOUR_COLS, col%DailyTableGrid.HOUR_COLS * (60/DailyTableGrid.HOUR_COLS));
+				col/DayData.HOUR_COLS, col%DayData.HOUR_COLS * (60/DayData.HOUR_COLS));
 	}
 	
 	public Calendar getCalendar() {
 		Calendar c = Calendar.getInstance();
 		c.set(year, month, day);
-		c.set(Calendar.HOUR_OF_DAY, col/DailyTableGrid.HOUR_COLS);
-		c.set(Calendar.MINUTE, col%DailyTableGrid.HOUR_COLS * (60/DailyTableGrid.HOUR_COLS));
+		c.set(Calendar.HOUR_OF_DAY, col/DayData.HOUR_COLS);
+		c.set(Calendar.MINUTE, col%DayData.HOUR_COLS * (60/DayData.HOUR_COLS));
 		return c;
 	}
 	

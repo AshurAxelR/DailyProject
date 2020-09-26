@@ -78,7 +78,7 @@ public class DailyProject extends JFrame {
 		
 		cp.add(table, BorderLayout.CENTER);
 		cp.add(rpane, BorderLayout.EAST);
-				
+		
 		setContentPane(cp);
 		GraphicsEnvironment genv=GraphicsEnvironment.getLocalGraphicsEnvironment();
 		setBounds(genv.getMaximumWindowBounds());
@@ -96,12 +96,26 @@ public class DailyProject extends JFrame {
 	}
 	
 	public static void main(String[] args) {
+		if(args.length>0) {
+			boolean ui = true;
+			for(int i=0; i<args.length; i++) {
+				switch(args[i]) {
+					case "-migratexml":
+						TableData.migrateXml();
+						ui = false;
+						break;
+				}
+			}
+			if(!ui) return;
+		}
+		
 		try {
 			frame = new DailyProject();
 			RenderUtils.initFonts();
 			frame.setExtendedState(JFrame.MAXIMIZED_BOTH);
 			frame.setVisible(true);
 		} catch(Exception e) {
+			e.printStackTrace();
 			OptionPane.showMessageDialog("Application failed to initialise"+((e.getMessage()==null)?
 					".":" with the following error message: "+e.getMessage()), "Initialisation error", OptionPane.ERROR_ICON,
 					new String[] {"Close"});

@@ -16,5 +16,5 @@ public interface ActivityImageHolder {
 	
 	public BufferedImage getImage(int type);
 	public Color getColor();
-	public boolean isNull();
+	//public boolean isNull();
 }

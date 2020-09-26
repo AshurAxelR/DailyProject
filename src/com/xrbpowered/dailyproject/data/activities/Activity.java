@@ -13,25 +13,32 @@ import com.xrbpowered.dailyproject.ui.table.DailyTableGrid;
 
 
 public class Activity implements ActivityImageHolder {
+	public static final int NULL_ID = -1;
+	public static final int MAX_ID = 127;
+	
+	private byte id = -1;
 	private String caption = null;
 	private Color color = null;
 	private BufferedImage[] images = null;
 	private boolean inactive = false;
 	
-	public String id = null;
 	public ActivityGroup group = null;
 	
 	public int index = -1;
 	
-	private static Activity nullActivity = new Activity();
-	
-	private Activity() {
-	}
-	
 	public Activity(Element el) throws IOException, InvalidFormatException {
-		id = el.getAttribute("id");
-		if(id==null || id.isEmpty())
+		if(!el.hasAttribute("id"))
 			throw new InvalidFormatException();
+		try {
+			int id = Integer.parseInt(el.getAttribute("id"));
+			if(id<0 || id>MAX_ID)
+				throw new InvalidFormatException();
+			this.id = (byte)id;
+		}
+		catch(NumberFormatException e) {
+			throw new InvalidFormatException();
+		}
+		
 		caption = el.getAttribute("caption");
 		color = new Color(Integer.parseInt(el.getAttribute("color"), 16));
 		BufferedImage image = DailyTableGrid.createColorisedActivityImage(color);
@@ -43,10 +50,10 @@ public class Activity implements ActivityImageHolder {
 		inactive = el.getAttribute("inactive").equals("1");
 	}
 	
-	public boolean isNull() {
-		return images==null;
+	public byte getId() {
+		return id;
 	}
-
+	
 	public String getCaption() {
 		return caption;
 	}
@@ -64,10 +71,6 @@ public class Activity implements ActivityImageHolder {
 
 	public boolean isInactive() {
 		return inactive;
-	}
-	
-	public static Activity nullActivity() {
-		return nullActivity;
 	}
 
 	

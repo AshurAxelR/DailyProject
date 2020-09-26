@@ -14,7 +14,7 @@ import com.xrbpowered.dailyproject.data.XmlUtils;
 
 public class NoteData implements Iterable<Note> {
 
-	public static final String NOTE_DATA_PATH = TableData.DATA_PATH+"/notes.xml";
+	public static final String NOTE_DATA_PATH = "notes.xml";
 
 	protected boolean saved = true;
 

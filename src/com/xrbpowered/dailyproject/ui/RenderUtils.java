@@ -82,14 +82,14 @@ public abstract class RenderUtils {
 	}
 	
 	public static void renderActivityThumb(Graphics2D g2, ActivityImageHolder activity, int x, int y) {
-		if(activity==null || activity.isNull())
+		if(activity==null)
 			return;
 		g2.drawImage(activity.getImage(ActivityImageHolder.FULL), x, y, x+15, y+16, 0, 0, 15, 16, null);
 		g2.drawImage(activity.getImage(ActivityImageHolder.FULL), x+15, y, x+20, y+16, 75, 0, 80, 16, null);
 	}
 
 	public static void renderLongActivityThumb(Graphics2D g2, ActivityImageHolder activity, int x, int y) {
-		if(activity==null || activity.isNull())
+		if(activity==null)
 			return;
 		g2.drawImage(activity.getImage(ActivityImageHolder.FULL), x, y, x+15, y+16, 0, 0, 15, 16, null);
 		g2.drawImage(activity.getImage(ActivityImageHolder.FULL), x+15, y, x+40, y+16, 55, 0, 80, 16, null);

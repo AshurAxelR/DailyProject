@@ -3,9 +3,8 @@ package com.xrbpowered.dailyproject.data.activities;
 import com.xrbpowered.dailyproject.data.log.DayData;
 
 public class Statistics {
-	private Activity[] log = new Activity[24*4];
+	private Activity[] log = new Activity[DayData.LOG_LEN];
 	private int[] statistics;
-	//private int[] groupStatistics;
 	private boolean noStats;
 
 	private ActivityList activityList;
@@ -20,9 +19,9 @@ public class Statistics {
 		for(int i=0; i<activityList.activities.length; i++) {
 			statistics[i] = 0;
 		}
-		for(int col=0; col<24*4; col++) {
+		for(int col=0; col<DayData.LOG_LEN; col++) {
 			Activity activity = data.getActivity(col);
-			if(!activity.isNull() && activity.index>=0) {
+			if(activity!=null && activity.index>=0) {
 				noStats = false;
 				statistics[activity.index]++;
 			}
@@ -33,27 +32,19 @@ public class Statistics {
 				for(int j=0; j<statistics[activityOrder[i]]; j++)
 					log[col++] = activityList.activities[activityOrder[i]];
 			}
-			for(; col<24*4; col++)
-				log[col] = Activity.nullActivity();
+			for(; col<DayData.LOG_LEN; col++)
+				log[col] = null;
 		}
 	}
 	
 	public Activity getActivity(int col) {
-		if(col<0 || col>=24*4)
+		if(col<0 || col>=DayData.LOG_LEN)
 			return null;
 		return log[col];
 	}
 	
 	public ActivityList getActivityList() {
 		return activityList;
-	}
-	
-	public ActivityGroup getActivityGroup(int col) {
-		if(col<0 || col>=24*4)
-			return null;
-		if(log[col].isNull())
-			return null;
-		return log[col].group;
 	}
 	
 	public int getStatValue(int activityIndex) {

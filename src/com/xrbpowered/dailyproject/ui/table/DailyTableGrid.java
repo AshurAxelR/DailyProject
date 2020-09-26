@@ -18,7 +18,6 @@ import java.util.Calendar;
 
 import javax.swing.JPanel;
 
-import com.xrbpowered.dailyproject.data.activities.Activity;
 import com.xrbpowered.dailyproject.data.activities.ActivityList;
 import com.xrbpowered.dailyproject.data.activities.Statistics;
 import com.xrbpowered.dailyproject.data.log.DayData;
@@ -40,7 +39,7 @@ public class DailyTableGrid extends JPanel implements MouseListener, MouseMotion
 	
 	public static final int ACTIVITY_IMAGE_WIDTH = 80;
 	public static final int ACTIVITY_IMAGE_HEIGHT = 16;
-	public static final int HOUR_COLS = 4;
+	private static final int HOUR_COLS = DayData.HOUR_COLS;
 	
 	private static final int GRID_STARTX = 50;
 	private static final int GRID_STARTY = 16;
@@ -146,7 +145,7 @@ public class DailyTableGrid extends JPanel implements MouseListener, MouseMotion
 	private void drawActivityItem(Graphics2D g2, int col, int colx, int rowy, ActivityImageHolder activity,
 			ActivityImageHolder prevActivity, ActivityImageHolder nextActivity) {
 		ActivityImageHolder imgHolder = activity;
-		if(activity == null || activity.isNull())
+		if(activity==null)
 			imgHolder = bgImageHolder;
 		
 		BufferedImage img;
@@ -596,7 +595,7 @@ public class DailyTableGrid extends JPanel implements MouseListener, MouseMotion
 				}
 			} else if(parent.getMode() == DailyTable.MODE_EDIT_ACTIVITIES) {
 				if(selectionStart != null) {
-					Activity sel = SelectActivityDialog.show(e.getLocationOnScreen(), activityList);
+					Byte sel = SelectActivityDialog.show(e.getLocationOnScreen(), activityList);
 					if(sel != null) {
 						Calendar date = (Calendar) startDate.clone();
 						date.add(Calendar.DAY_OF_MONTH, selectionStart.y);

@@ -23,7 +23,7 @@ import com.xrbpowered.dailyproject.ui.RenderUtils;
 
 public class SelectActivityDialog extends JDialog {
 
-	private Activity selectedActivity = null;
+	private Byte selectedActivityId = null;
 	
 	private SelectActivityDialog(ActivityList activityList) {
 		setTitle("Set activity");
@@ -56,7 +56,7 @@ public class SelectActivityDialog extends JDialog {
 			button.addActionListener(new ActionListener() {
 				@Override
 				public void actionPerformed(ActionEvent e) {
-					selectedActivity = button.getActivity();
+					selectedActivityId = button.getActivity().getId();
 					dispose();
 				}
 			});
@@ -88,7 +88,7 @@ public class SelectActivityDialog extends JDialog {
 		btnClear.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				selectedActivity = Activity.nullActivity();
+				selectedActivityId = Activity.NULL_ID;
 				dispose();
 			}
 		});
@@ -101,7 +101,7 @@ public class SelectActivityDialog extends JDialog {
 		btnCancel.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				selectedActivity = null;
+				selectedActivityId = null;
 				dispose();
 			}
 		});
@@ -120,7 +120,7 @@ public class SelectActivityDialog extends JDialog {
 		setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
 	}
 	
-	public static Activity show(Point position, ActivityList activityList) {
+	public static Byte show(Point position, ActivityList activityList) {
 		SelectActivityDialog dlg = new SelectActivityDialog(activityList);
 		dlg.setModal(true);
 		if(position!=null) {
@@ -137,6 +137,6 @@ public class SelectActivityDialog extends JDialog {
 			dlg.setLocation(position);
 		}
 		dlg.setVisible(true);
-		return dlg.selectedActivity;
+		return dlg.selectedActivityId;
 	}
 }

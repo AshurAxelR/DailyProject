@@ -81,7 +81,7 @@ public class ActivityButton extends JButton implements MouseListener {
 		
 		@Override
 		public void paint(Graphics2D g2) {
-			if(activity==null || activity.isNull())
+			if(activity==null)
 				return;
 			RenderUtils.renderActivityThumb(g2, activity, 18, 8);
 			

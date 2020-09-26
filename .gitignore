@@ -1,4 +1,6 @@
 /log/
+notes.xml
+dailylog.dat
 
 # Compiled class file
 *.class

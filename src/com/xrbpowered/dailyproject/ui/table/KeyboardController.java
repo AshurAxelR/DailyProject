@@ -7,6 +7,8 @@ import java.awt.event.KeyEvent;
 import javax.swing.JComponent;
 import javax.swing.KeyStroke;
 
+import com.xrbpowered.dailyproject.data.log.DayData;
+
 public class KeyboardController {
 
 	private void addAction(final DailyTable table, int keyCode, int keyMods, ActionListener action) {
@@ -71,14 +73,14 @@ public class KeyboardController {
 		addAction(table, KeyEvent.VK_LEFT, 0, new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				tableGrid.moveStartCol(-DailyTableGrid.HOUR_COLS);
+				tableGrid.moveStartCol(-DayData.HOUR_COLS);
 			}
 		});
 	
 		addAction(table, KeyEvent.VK_RIGHT, 0, new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				tableGrid.moveStartCol(DailyTableGrid.HOUR_COLS);
+				tableGrid.moveStartCol(DayData.HOUR_COLS);
 			}
 		});
 		
