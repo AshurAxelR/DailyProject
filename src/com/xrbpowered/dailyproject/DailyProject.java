@@ -109,6 +109,7 @@ public class DailyProject extends JFrame {
 			if(!ui) return;
 		}
 		
+		System.out.println("Starting UI...");
 		try {
 			frame = new DailyProject();
 			RenderUtils.initFonts();

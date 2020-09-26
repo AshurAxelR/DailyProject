@@ -50,6 +50,8 @@ public class ActivityList {
 				TableData.saveFormat = TableData.FORMAT_XML;
 			else if(sf.equalsIgnoreCase("dat") || sf.equalsIgnoreCase("data"))
 				TableData.saveFormat = TableData.FORMAT_DATA;
+			else if(sf.equalsIgnoreCase("pak") || sf.equalsIgnoreCase("packed"))
+				TableData.saveFormat = TableData.FORMAT_DATA_PACKED;
 		}
 		
 		LinkedList<ActivityGroup> groupList = new LinkedList<ActivityGroup>();

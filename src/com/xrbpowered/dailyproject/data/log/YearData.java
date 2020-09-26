@@ -39,7 +39,7 @@ public class YearData {
 					throw new InvalidFormatException();
 				}
 				DataInputStream in = new DataInputStream(zip);
-				loadData(in);
+				loadData(in, true);
 				zip.close();
 				
 				if(TableData.saveFormat!=TableData.FORMAT_DATA)
@@ -52,7 +52,13 @@ public class YearData {
 		}
 	}
 	
+	public YearData(int year, DataInputStream in) throws IOException, InvalidFormatException {
+		this.year = year;
+		loadData(in, false);
+	}
+	
 	public void markUnsaved() {
+		TableData.getInstance().markUnsaved();
 		saved = false;
 	}
 
@@ -66,12 +72,14 @@ public class YearData {
 		return months[m];
 	}
 	
-	private void loadData(DataInputStream in) throws IOException, InvalidFormatException {
-		if(in.readByte()!='Y')
-			throw new InvalidFormatException();
-		int year = in.readShort();
-		if(year!=this.year)
-			throw new InvalidFormatException();
+	public void loadData(DataInputStream in, boolean header) throws IOException, InvalidFormatException {
+		if(header) {
+			if(in.readByte()!='Y')
+				throw new InvalidFormatException();
+			int year = in.readShort();
+			if(year!=this.year)
+				throw new InvalidFormatException();
+		}
 		int mask = in.readShort();
 		for(int m=0; m<months.length; m++) {
 			if((mask&1)!=0)
@@ -82,9 +90,11 @@ public class YearData {
 		}
 	}
 	
-	private void saveData(DataOutputStream out) throws IOException {
-		out.writeByte('Y');
-		out.writeShort(year);
+	public void saveData(DataOutputStream out, boolean header) throws IOException {
+		if(header) {
+			out.writeByte('Y');
+			out.writeShort(year);
+		}
 		int mask = 0;
 		for(int m=months.length-1; m>=0; m--) {
 			mask = (mask<<1) | (months[m]==null ? 0 : 1);
@@ -124,7 +134,7 @@ public class YearData {
 				zip.putNextEntry(new ZipEntry("dailylog"));
 				DataOutputStream out = new DataOutputStream(zip);
 				
-				saveData(out);
+				saveData(out, true);
 				
 				zip.closeEntry();
 				zip.close();

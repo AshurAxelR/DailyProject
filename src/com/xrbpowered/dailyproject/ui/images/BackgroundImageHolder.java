@@ -15,10 +15,6 @@ public class BackgroundImageHolder implements ActivityImageHolder {
 		DailyTableGrid.splitActivityImage(images);
 	}
 	
-	public boolean isNull() {
-		return images==null;
-	}
-
 	public Color getColor() {
 		return Color.WHITE;
 	}
