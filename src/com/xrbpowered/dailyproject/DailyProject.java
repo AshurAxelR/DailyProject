@@ -16,6 +16,7 @@ import com.xrbpowered.dailyproject.ui.ClockThread;
 import com.xrbpowered.dailyproject.ui.RenderUtils;
 import com.xrbpowered.dailyproject.ui.RichInfoPane;
 import com.xrbpowered.dailyproject.ui.dialogs.OptionPane;
+import com.xrbpowered.dailyproject.ui.dialogs.StatusPane;
 import com.xrbpowered.dailyproject.ui.table.DailyTable;
 
 
@@ -24,7 +25,7 @@ public class DailyProject extends JFrame {
 	private static final String TITLE = "Daily";
 	
 	public static final int DEFAULT_INFO_PANEL_WIDTH = 250;
-	public static final int DEFAULT_STATUS_BAR_WIDTH = DEFAULT_INFO_PANEL_WIDTH+200;
+	public static final int STATUS_BAR_HEIGHT = 22;
 	
 	private static DailyProject frame = null;
 	
@@ -50,12 +51,16 @@ public class DailyProject extends JFrame {
 
 		final DailyTable table = new DailyTable(this, ActivityList.getInstance());
 		rpane = new RichInfoPane();
+		final StatusPane status = new StatusPane();
+		status.setBorderColor(RenderUtils.GRAY192);
+		status.setContext(table.getTable().getContext());
 
 		JPanel cp = new JPanel() {
 			@Override
 			public void doLayout() {
 				int w = table.getMaxTableWidth();
-				int h = getHeight()-1;
+				int h = getHeight()-STATUS_BAR_HEIGHT-1;
+				status.setBounds(0, h+1, getWidth(), STATUS_BAR_HEIGHT);
 				if(!rpane.isVisible()) {
 					table.setBounds(0, 1, getWidth(), h);
 				}
@@ -78,6 +83,7 @@ public class DailyProject extends JFrame {
 		
 		cp.add(table, BorderLayout.CENTER);
 		cp.add(rpane, BorderLayout.EAST);
+		cp.add(status, BorderLayout.SOUTH);
 		
 		setContentPane(cp);
 		GraphicsEnvironment genv=GraphicsEnvironment.getLocalGraphicsEnvironment();

@@ -18,6 +18,7 @@ import java.util.Calendar;
 
 import javax.swing.JPanel;
 
+import com.xrbpowered.dailyproject.data.activities.Activity;
 import com.xrbpowered.dailyproject.data.activities.ActivityList;
 import com.xrbpowered.dailyproject.data.activities.Statistics;
 import com.xrbpowered.dailyproject.data.log.DayData;
@@ -27,6 +28,7 @@ import com.xrbpowered.dailyproject.data.log.TableData;
 import com.xrbpowered.dailyproject.ui.RenderUtils;
 import com.xrbpowered.dailyproject.ui.dialogs.EditNoteDialog;
 import com.xrbpowered.dailyproject.ui.dialogs.OptionPane;
+import com.xrbpowered.dailyproject.ui.dialogs.RenderableContext;
 import com.xrbpowered.dailyproject.ui.dialogs.SelectActivityDialog;
 import com.xrbpowered.dailyproject.ui.images.ActivityImageHolder;
 import com.xrbpowered.dailyproject.ui.images.BackgroundImageHolder;
@@ -79,6 +81,7 @@ public class DailyTableGrid extends JPanel implements MouseListener, MouseMotion
 	private Point selectionStart = null;
 	private Point selectionSize = null;
 
+	private Point hoverPoint = null;
 	private Note showingNote = null;
 	private Point showingNotePoint = null;
 
@@ -87,6 +90,20 @@ public class DailyTableGrid extends JPanel implements MouseListener, MouseMotion
 	
 	private int[] activityOrder;
 
+	private RenderableContext context = new RenderableContext() {
+		@Override
+		public void paint(Graphics2D g2) {
+			g2.setFont(RenderUtils.FONT11);
+			g2.setColor(Color.BLACK);
+			if(hoverPoint!=null && parent.getMode() != DailyTable.MODE_STATS) {
+				Calendar calendar = getRowCalendar(hoverPoint.y);
+				g2.drawString(RenderUtils.formatTimeStamp(calendar.get(Calendar.DAY_OF_MONTH),
+						calendar.get(Calendar.MONTH), hoverPoint.x/HOUR_COLS,
+						hoverPoint.x%HOUR_COLS * (60/HOUR_COLS)), GRID_STARTX, 16);
+			}
+		}
+	};
+	
 	public DailyTableGrid(DailyTable parent, ActivityList activityList) throws IOException {
 		this.parent = parent;
 		this.activityList = activityList;
@@ -98,6 +115,10 @@ public class DailyTableGrid extends JPanel implements MouseListener, MouseMotion
 		addMouseWheelListener(this);
 	}
 
+	public RenderableContext getContext() {
+		return context;
+	}
+	
 	private static void loadResources() throws IOException {
 		if(bgImage == null) {
 			bgImage = RenderUtils.loadImage(BG_IMAGE_NAME);
@@ -121,7 +142,7 @@ public class DailyTableGrid extends JPanel implements MouseListener, MouseMotion
 	public int getMaxGridCols() {
 		return Math.max(24, activityList.activities.length);
 	}
-	
+
 	public int getMaxGridRows() {
 		return (getHeight()-GRID_STARTY) / ROW_HEIGHT;
 	}
@@ -640,7 +661,7 @@ public class DailyTableGrid extends JPanel implements MouseListener, MouseMotion
 	}
 
 	private boolean isOnScreen(Point loc) {
-		return loc.x>=startCol && loc.x<getMaxGridCols()*4 && loc.y>0;
+		return loc.x>=startCol && loc.x<getModeGridCols()*4 && loc.y>=0 && loc.y<=getMaxGridRows();
 	}
 
 	private void sortSelection(Point start, Point size) {
@@ -664,12 +685,12 @@ public class DailyTableGrid extends JPanel implements MouseListener, MouseMotion
 		Point pt = (Point) loc.clone();
 		if(pt.x<startCol)
 			pt.x = startCol;
-		if(pt.x > getMaxGridCols()*4)
-			pt.x = getMaxGridCols()*4;
+		if(pt.x > getModeGridCols()*HOUR_COLS)
+			pt.x = getModeGridCols()*HOUR_COLS;
 		if(pt.y<0)
 			pt.y = 0;
-		if(pt.y > getMaxGridRows()+1)
-			pt.y = getMaxGridRows()+1;
+		if(pt.y > getMaxGridRows())
+			pt.y = getMaxGridRows();
 		return pt;
 	}
 
@@ -714,18 +735,21 @@ public class DailyTableGrid extends JPanel implements MouseListener, MouseMotion
 					return;
 				Statistics stats = activityList.getStatistics();
 				stats.setDayData(data, activityOrder);
-				int n = stats.getActivity(loc.x).index;
-				int[] sorted = new int[activityOrder.length];
-				sorted[0] = n;
-				int i=0;
-				for(; activityOrder[i]!=n; i++) {
-					sorted[i+1] = activityOrder[i];
+				Activity activity = stats.getActivity(loc.x);
+				if(activity!=null) {
+					int n = activity.index;
+					int[] sorted = new int[activityOrder.length];
+					sorted[0] = n;
+					int i=0;
+					for(; activityOrder[i]!=n; i++) {
+						sorted[i+1] = activityOrder[i];
+					}
+					i++;
+					for(; i<activityOrder.length; i++) {
+						sorted[i] = activityOrder[i];
+					}
+					activityOrder = sorted;
 				}
-				i++;
-				for(; i<activityOrder.length; i++) {
-					sorted[i] = activityOrder[i];
-				}
-				activityOrder = sorted;
 				repaint();
 			}
 		}
@@ -778,19 +802,30 @@ public class DailyTableGrid extends JPanel implements MouseListener, MouseMotion
 
 	@Override
 	public void mouseMoved(MouseEvent e) {
+		Point loc = pointToCell(e.getPoint());
+		if(isOnScreen(loc)) {
+			if(hoverPoint==null)
+				hoverPoint = new Point(loc);
+			else
+				hoverPoint.setLocation(loc);
+		}
+		else
+			hoverPoint = null;
+		
 		if(selecting) {
-			Point loc = snapToScreen(pointToCell(e.getPoint()));
+			loc = snapToScreen(loc);
 			selectionSize.setLocation(loc.x - selectionStart.x, loc.y - selectionStart.y);
 			repaint();
 		}
 		else if(dragNote != null) {
-			dragNotePosition = snapToScreen(pointToCell(e.getPoint()));
+			dragNotePosition = snapToScreen(loc);
+			if(dragNotePosition.x==24*HOUR_COLS)
+				dragNotePosition.x--;
 			repaint();
 		}
 		else if(parent.getMode()==DailyTable.MODE_OBSERVE
 				|| parent.getMode()==DailyTable.MODE_EDIT_NOTES) {
 			Note prevNote = showingNote;
-			Point loc = pointToCell(e.getPoint());
 			if(isOnScreen(loc)) {
 				showingNote = TableData.getNotes().getNoteAt(startDate, loc.y, loc.x);
 				if(showingNote!=null)
@@ -801,6 +836,7 @@ public class DailyTableGrid extends JPanel implements MouseListener, MouseMotion
 				repaint();
 			}
 		}
+		context.repaint();
 	}
 	
 	public void moveStartDate(int delta) {

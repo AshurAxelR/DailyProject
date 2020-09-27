@@ -14,10 +14,15 @@ import com.xrbpowered.dailyproject.ui.RenderUtils;
 public class StatusPane extends JPanel {
 	
 	private RenderableContext context = null;
+	private Color borderColor = RenderUtils.GRAY240;
 	
 	public void setContext(RenderableContext context) {
 		this.context = context;
 		context.component = this;
+	}
+	
+	public void setBorderColor(Color c) {
+		this.borderColor = c;
 	}
 	
 	@Override
@@ -26,7 +31,7 @@ public class StatusPane extends JPanel {
 		g2.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_LCD_HRGB);
 		g2.setPaint(new GradientPaint(0, 0, Color.WHITE, 0, getHeight(), RenderUtils.GRAY240));
 		g2.fillRect(0, 0, getWidth(), getHeight());
-		g2.setColor(RenderUtils.GRAY240);
+		g2.setColor(borderColor);
 		g2.drawLine(0, 0, getWidth(), 0);
 		
 		if(context!=null)
