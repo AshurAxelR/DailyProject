@@ -50,7 +50,7 @@ public class DailyProject extends JFrame {
 		
 
 		final DailyTable table = new DailyTable(this, ActivityList.getInstance());
-		rpane = new RichInfoPane();
+		rpane = new RichInfoPane(table);
 		final StatusPane status = new StatusPane();
 		status.setBorderColor(RenderUtils.GRAY192);
 		status.setContext(table.getTable().getContext());

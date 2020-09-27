@@ -17,6 +17,8 @@ public class Note implements Comparable<Note> {
 	
 	public String text = "";
 	
+	public int infoy = 0;
+	
 	private Note() {
 	}
 	

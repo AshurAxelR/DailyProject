@@ -644,11 +644,15 @@ public class DailyTableGrid extends JPanel implements MouseListener, MouseMotion
 		}
 	}
 
-	public void scrollToToday() {
-		startDate = Calendar.getInstance();
+	public void scrollToDay(Calendar calendar) {
+		startDate = (Calendar)calendar.clone();
 		startDate.add(Calendar.DAY_OF_MONTH, -7);
 		deselect();
 		repaint();
+	}
+	
+	public void scrollToToday() {
+		scrollToDay(Calendar.getInstance());
 	}
 
 	public void deselect() {
