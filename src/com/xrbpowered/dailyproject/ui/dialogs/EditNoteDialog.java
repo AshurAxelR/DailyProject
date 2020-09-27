@@ -1,6 +1,7 @@
 package com.xrbpowered.dailyproject.ui.dialogs;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
@@ -14,6 +15,7 @@ import java.awt.event.KeyEvent;
 import javax.swing.BorderFactory;
 import javax.swing.JComponent;
 import javax.swing.JDialog;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.KeyStroke;
@@ -36,11 +38,22 @@ public class EditNoteDialog extends JDialog {
 		setBackground(RenderUtils.GRAY240);
 		
 		GridBagConstraints c;
-		
+
+		JLabel labelTime = new JLabel(note.formatTimeStamp());
+		labelTime.setFont(RenderUtils.FONT11);
+		labelTime.setForeground(Color.GRAY);
+		labelTime.setBackground(Color.WHITE);
+		labelTime.setOpaque(true);
+		labelTime.setBorder(BorderFactory.createEmptyBorder(2, 4, 2, 4));
+		labelTime.setPreferredSize(new Dimension(280, 16));
+		cp.add(labelTime, BorderLayout.NORTH);
+
 		final JTextField edit = new JTextField();
 		edit.setFont(RenderUtils.FONT11);
 		edit.setText(targetNote.text);
-		edit.setBorder(BorderFactory.createEmptyBorder(4, 4, 4, 4));
+		edit.setBorder(BorderFactory.createCompoundBorder(
+				BorderFactory.createMatteBorder(1, 0, 0, 0, RenderUtils.GRAY224),
+				BorderFactory.createEmptyBorder(4, 4, 4, 4)));
 		edit.setPreferredSize(new Dimension(280, 20));
 		cp.add(edit, BorderLayout.CENTER);
 		

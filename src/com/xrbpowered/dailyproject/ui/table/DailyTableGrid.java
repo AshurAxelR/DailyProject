@@ -338,7 +338,13 @@ public class DailyTableGrid extends JPanel implements MouseListener, MouseMotion
 		g2.setColor(Color.GRAY);
 		g2.drawLine(GRID_STARTX, GRID_STARTY, GRID_STARTX, getHeight());
 	}
-	
+
+	private void paintFrameSelection(Graphics2D g2, int x, int y, int w, int h) {
+		g2.setColor(new Color(128, 128, 128, 64));
+		g2.fillRect(x, 0, w, 16);
+		g2.fillRect(16, y, 34, h);
+	}
+
 	private void paintSelection(Graphics2D g2, Rectangle sel, int sum, int num) {
 		if(parent.getMode()==DailyTable.MODE_EDIT_ACTIVITIES
 				|| parent.getMode()==DailyTable.MODE_STATS && parent.statsSummary) {
@@ -348,9 +354,7 @@ public class DailyTableGrid extends JPanel implements MouseListener, MouseMotion
 				int w = sel.width*COL_WIDTH;
 				int y = getRowY(sel.y);
 				int h = sel.height*ROW_HEIGHT;
-				g2.setColor(new Color(128, 128, 128, 64));
-				g2.fillRect(x, 0, w, 16);
-				g2.fillRect(16, y, 34, h);
+				paintFrameSelection(g2, x, y, w, h);
 				g2.setColor(new Color(128, 128, 128, 128));
 				g2.fillRect(x, y, w, h);
 				g2.setColor(Color.GRAY);
@@ -446,7 +450,11 @@ public class DailyTableGrid extends JPanel implements MouseListener, MouseMotion
 		g2.fillRect(x-w/2, y-h-5+18, w, h-18);
 		g2.setColor(new Color(255, 255, 255, 192));
 		g2.drawRect(x-w/2, y-h-5, w, h);
-		g2.drawLine(x, y-5, x, y);
+		
+		g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+		g2.fillPolygon(new int[] {x-6, x, x+6}, new int[] {y-5, y+1, y-5}, 3);
+		g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
+				RenderingHints.VALUE_ANTIALIAS_OFF);
 		
 		g2.setColor(Color.RED);
 		g2.drawRect(x-w/2+1, y-h-5+1, w-2, h-2);
@@ -565,7 +573,10 @@ public class DailyTableGrid extends JPanel implements MouseListener, MouseMotion
 		}
 
 		if(dragNote != null) {
-			paintNoteMark(g2, Color.GRAY, getColX(dragNotePosition.x-startCol), getRowY(dragNotePosition.y));
+			int x = getColX(dragNotePosition.x-startCol);
+			int y = getRowY(dragNotePosition.y);
+			paintFrameSelection(g2, x, y, COL_WIDTH, ROW_HEIGHT);
+			paintNoteMark(g2, Color.GRAY, x, y);
 		}
 	}
 

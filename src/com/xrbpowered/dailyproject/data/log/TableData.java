@@ -127,39 +127,38 @@ public class TableData {
 	}
 	
 	public boolean save(boolean onQuit) {
-		if(saved)
-			return true;
-		
-		if(saveFormat==FORMAT_XML || saveFormat==FORMAT_DATA) {
-			File dir = new File(DATA_PATH);
-			if(!dir.isDirectory())
-				dir.mkdir();
-		}
-		
 		int failed = 0;
 		
-		if(saveFormat==FORMAT_XML || saveFormat==FORMAT_DATA) {
-			for(YearData y : years.values())
-				failed += y.save();
-		}
-		else if(saveFormat==FORMAT_DATA_PACKED) {
-			try {
-				ZipOutputStream zip = new ZipOutputStream(new FileOutputStream(DATA_PACKED_PATH));
-				zip.putNextEntry(new ZipEntry("dailylogs"));
-				DataOutputStream out = new DataOutputStream(zip);
-				saveData(out);
-				zip.closeEntry();
-				zip.close();
-				System.out.println("Saved "+DATA_PACKED_PATH);
-				saved = true;
+		if(!saved) {
+			if(saveFormat==FORMAT_XML || saveFormat==FORMAT_DATA) {
+				File dir = new File(DATA_PATH);
+				if(!dir.isDirectory())
+					dir.mkdir();
 			}
-			catch(IOException e) {
-				e.printStackTrace();
+			
+			if(saveFormat==FORMAT_XML || saveFormat==FORMAT_DATA) {
+				for(YearData y : years.values())
+					failed += y.save();
+			}
+			else if(saveFormat==FORMAT_DATA_PACKED) {
+				try {
+					ZipOutputStream zip = new ZipOutputStream(new FileOutputStream(DATA_PACKED_PATH));
+					zip.putNextEntry(new ZipEntry("dailylogs"));
+					DataOutputStream out = new DataOutputStream(zip);
+					saveData(out);
+					zip.closeEntry();
+					zip.close();
+					System.out.println("Saved "+DATA_PACKED_PATH);
+					saved = true;
+				}
+				catch(IOException e) {
+					e.printStackTrace();
+					failed++;
+				}
+			}
+			else {
 				failed++;
 			}
-		}
-		else {
-			failed++;
 		}
 		
 		if(!getNotes().save())

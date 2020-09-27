@@ -41,6 +41,7 @@ public class NoteData implements Iterable<Note> {
 			notes.sort(null);
 		}
 		catch(Exception e) {
+			e.printStackTrace();
 			notes.clear();
 			map.clear();
 		}
@@ -64,6 +65,7 @@ public class NoteData implements Iterable<Note> {
 			return true;
 		}
 		catch(Exception e) {
+			e.printStackTrace();
 			return false;
 		}
 	}
