@@ -830,6 +830,8 @@ public class DailyTableGrid extends JPanel implements MouseListener, MouseMotion
 		if(selecting) {
 			loc = snapToScreen(loc);
 			selectionSize.setLocation(loc.x - selectionStart.x, loc.y - selectionStart.y);
+			if(parent.getMode()==DailyTable.MODE_EDIT_ACTIVITIES)
+				selectionSize.y = 0;
 			repaint();
 		}
 		else if(dragNote != null) {
