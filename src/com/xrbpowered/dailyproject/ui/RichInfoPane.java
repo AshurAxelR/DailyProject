@@ -7,6 +7,7 @@ import java.awt.RenderingHints;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
+import java.awt.geom.Rectangle2D;
 import java.util.Calendar;
 
 import javax.swing.JPanel;
@@ -17,8 +18,6 @@ import com.xrbpowered.dailyproject.ui.dialogs.EditNoteDialog;
 import com.xrbpowered.dailyproject.ui.table.DailyTable;
 
 public class RichInfoPane extends JPanel implements MouseMotionListener, MouseListener {
-
-	public static final String[] MONTH_NAMES = {"Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"};
 
 	private DailyTable table;
 	private Note hoverNote = null;
@@ -41,16 +40,12 @@ public class RichInfoPane extends JPanel implements MouseMotionListener, MouseLi
 		g2.setColor(RenderUtils.GRAY224);
 		g2.drawRect(8, 8, getWidth()-16, getHeight()-16);
 		
-		g2.setClip(8, 8, getWidth()-16, getHeight()-16);
-		
 		Calendar calendar = Calendar.getInstance();
 		
 		// paint title
 		g2.setFont(RenderUtils.FONT11BOLD);
 		g2.setColor(Color.BLACK);
-		g2.drawString(RenderUtils.formatTimeStamp(calendar.get(Calendar.DAY_OF_MONTH),
-				calendar.get(Calendar.MONTH), calendar.get(Calendar.HOUR_OF_DAY),
-				calendar.get(Calendar.MINUTE)), 24, 42);
+		g2.drawString(RenderUtils.formatTimeStamp(calendar), 24, 42);
 		g2.setColor(RenderUtils.GRAY192);
 		g2.drawLine(24, 46, getWidth()-24, 46);
 		
@@ -58,6 +53,10 @@ public class RichInfoPane extends JPanel implements MouseMotionListener, MouseLi
 
 		g2.setFont(RenderUtils.FONT11);
 		g2.setColor(Color.GRAY);
+
+		Rectangle2D saveClip = g2.getClipBounds();
+		Rectangle2D textClip = new Rectangle2D.Float(16, 0, getWidth()-36, getHeight());
+		g2.setClip(textClip);
 
 		// paint notes
 		boolean titlePastLong = false;
@@ -104,22 +103,26 @@ public class RichInfoPane extends JPanel implements MouseMotionListener, MouseLi
 			}
 			
 			if(n==hoverNote) {
+				g2.setClip(saveClip);
 				g2.setColor(Color.WHITE);
-				g2.fillRect(16, y-2, getWidth()-32, 20);
+				g2.fillRect(16, y-1, getWidth()-32, 17);
 				g2.setColor(RenderUtils.GRAY224);
-				g2.drawRect(16, y-2, getWidth()-32, 20);
+				g2.drawRect(16, y-1, getWidth()-32, 17);
+				g2.setClip(textClip);
 			}
 
+			
 			g2.setColor(markColor);
 			g2.drawString("\u25cf", 24, y+12);
 			g2.setColor(RenderUtils.GRAY160);
-			g2.drawString(n.formatTimeStamp(), 40, y+12);
+			g2.drawString(n.formatTimeStamp(), 36, y+12);
 			g2.setColor(Color.BLACK);
-			g2.drawString(n.text, 128, y+12);
+			g2.drawString(n.text, 136, y+12);
 			
 			n.infoy = y;
 			y += 16;
 		}
+		g2.setClip(saveClip);
 	}
 
 	public int calcDiffDays(Calendar then, Calendar now) {

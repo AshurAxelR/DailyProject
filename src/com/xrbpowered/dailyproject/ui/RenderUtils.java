@@ -13,15 +13,18 @@ import java.io.IOException;
 import java.net.URL;
 import java.text.AttributedCharacterIterator;
 import java.text.AttributedString;
+import java.util.Calendar;
 
 import javax.imageio.ImageIO;
 
+import com.xrbpowered.dailyproject.data.log.DayData;
 import com.xrbpowered.dailyproject.ui.images.ActivityImageHolder;
-
-
 
 public abstract class RenderUtils {
 	
+	public static final String[] MONTH_NAMES = {"Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"};
+	public static final String[] DAY_OF_WEEK_LETTERS = {"Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"};
+
 	private static final String IMAGE_PACKAGE = "com/xrbpowered/dailyproject/images";
 	
 	public static final Color GRAY144 = new Color(144, 144, 144);
@@ -48,9 +51,26 @@ public abstract class RenderUtils {
 		FONT11BOLD = FONT11.deriveFont(Font.BOLD);
 	}
 	
-	public static String formatTimeStamp(int day, int month, int hour, int minute) {
-		return String.format("%02d %s, %02d:%02d",
-				day, RichInfoPane.MONTH_NAMES[month], hour, minute);
+	public static String formatTimeStamp(int dayOfWeek, int day, int month, int hour, int minute) {
+		return String.format("%s, %02d %s, %02d:%02d", DAY_OF_WEEK_LETTERS[dayOfWeek],
+				day, MONTH_NAMES[month], hour, minute);
+	}
+
+	public static String formatTimeStamp(Calendar calendar, int col) {
+		return formatTimeStamp(
+				calendar.get(Calendar.DAY_OF_WEEK)-1,
+				calendar.get(Calendar.DAY_OF_MONTH),
+				calendar.get(Calendar.MONTH),
+				col/DayData.HOUR_COLS, col%DayData.HOUR_COLS * (60/DayData.HOUR_COLS));
+	}
+
+	public static String formatTimeStamp(Calendar calendar) {
+		return formatTimeStamp(
+				calendar.get(Calendar.DAY_OF_WEEK)-1,
+				calendar.get(Calendar.DAY_OF_MONTH),
+				calendar.get(Calendar.MONTH),
+				calendar.get(Calendar.HOUR_OF_DAY),
+				calendar.get(Calendar.MINUTE));
 	}
 	
 	public static String formatDuration(int value) {

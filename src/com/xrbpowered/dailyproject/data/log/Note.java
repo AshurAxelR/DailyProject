@@ -93,8 +93,7 @@ public class Note implements Comparable<Note> {
 	}
 	
 	public String formatTimeStamp() {
-		return RenderUtils.formatTimeStamp(day, month,
-				col/DayData.HOUR_COLS, col%DayData.HOUR_COLS * (60/DayData.HOUR_COLS));
+		return RenderUtils.formatTimeStamp(getCalendar(), col);
 	}
 	
 	public Calendar getCalendar() {

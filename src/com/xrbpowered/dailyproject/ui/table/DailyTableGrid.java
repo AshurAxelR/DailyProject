@@ -35,7 +35,6 @@ import com.xrbpowered.dailyproject.ui.images.BackgroundImageHolder;
 
 public class DailyTableGrid extends JPanel implements MouseListener, MouseMotionListener, MouseWheelListener {
 
-	private static final String[] DAY_OF_WEEK_LETTERS = {"Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"};
 	private static final String BG_IMAGE_NAME = "bg.bmp";
 	private static final String FG_IMAGE_NAME = "fg.bmp";
 	
@@ -96,10 +95,9 @@ public class DailyTableGrid extends JPanel implements MouseListener, MouseMotion
 			g2.setFont(RenderUtils.FONT11);
 			g2.setColor(Color.BLACK);
 			if(hoverPoint!=null && parent.getMode() != DailyTable.MODE_STATS) {
-				Calendar calendar = getRowCalendar(hoverPoint.y);
-				g2.drawString(RenderUtils.formatTimeStamp(calendar.get(Calendar.DAY_OF_MONTH),
-						calendar.get(Calendar.MONTH), hoverPoint.x/HOUR_COLS,
-						hoverPoint.x%HOUR_COLS * (60/HOUR_COLS)), GRID_STARTX, 16);
+				g2.drawString(
+						RenderUtils.formatTimeStamp(getRowCalendar(hoverPoint.y), hoverPoint.x),
+						GRID_STARTX, 16);
 			}
 		}
 	};
@@ -216,7 +214,7 @@ public class DailyTableGrid extends JPanel implements MouseListener, MouseMotion
 				CALENDAR_MONTHBAR_WIDTH+2, rowy+TEXT_HEIGHT);
 		
 		g2.setColor((isWeekend)?Color.RED:Color.GRAY);
-		g2.drawString(DAY_OF_WEEK_LETTERS[calendar.get(Calendar.DAY_OF_WEEK)-1],
+		g2.drawString(RenderUtils.DAY_OF_WEEK_LETTERS[calendar.get(Calendar.DAY_OF_WEEK)-1],
 				CALENDAR_MONTHBAR_WIDTH+CALENDAR_DAYBAR_WIDTH-CALENDAR_DAYOFWEEK_WIDTH,
 				rowy+TEXT_HEIGHT);
 		
@@ -452,6 +450,7 @@ public class DailyTableGrid extends JPanel implements MouseListener, MouseMotion
 		g2.drawRect(x-w/2, y-h-5, w, h);
 		
 		g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+		g2.setColor(Color.WHITE);
 		g2.fillPolygon(new int[] {x-6, x, x+6}, new int[] {y-5, y+1, y-5}, 3);
 		g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
 				RenderingHints.VALUE_ANTIALIAS_OFF);
